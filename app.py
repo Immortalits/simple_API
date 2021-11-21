@@ -1,4 +1,5 @@
 import pickle
+from types import MethodDescriptorType
 from flask import Flask, render_template, request
 from flask.json import jsonify
 import uuid
@@ -30,6 +31,20 @@ def get_project(id):
     for project in projects["projects"]:
         if project["project_id"] == id:
             return project
+    return jsonify({'message': 'project not found'})
+
+
+# Frissítés
+@app.route('/project/<string:id>/complete', methods=['POST'])
+def update_project(id):
+    for project in projects["projects"]:
+        if project["project_id"] == id:
+            if project["completed"]:
+                return "", 200
+            else:
+                project["completed"] = True
+                save_data(projects)
+                return project
     return jsonify({'message': 'project not found'})
 
 
