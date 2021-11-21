@@ -73,17 +73,22 @@ def create_project():
     return jsonify({'message': f'project created with id: {new_project_id}'})
 
 
-@app.route('/project/<string:name>/task', methods=['POST'])
-def add_task_to_project(name):
+@app.route('/project/<string:id>/task', methods=['POST'])
+def add_task_to_project(id):
     request_data = request.get_json()
-    for project in projects:
-        if project['name'] == name:
+    new_task_id = uuid.uuid4().hex[:24]  # task aonosító
+    for project in projects["projects"]:
+        if project['project_id'] == id:
             new_task = {
                 'name': request_data['name'],
-                'completed': request_data['completed']
+                'task_id': new_task_id,
+                'completed': request_data['completed'],
+                'checklist': request_data['checklist']
             }
             project['tasks'].append(new_task)
-            return jsonify(new_task)
+            save_data(projects)  # mentjük a módosításokat
+            return jsonify(
+                {'message': f'task was added with id: {new_task_id}'})
     return jsonify({'message': 'project not found'})
 
 
