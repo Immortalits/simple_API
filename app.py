@@ -1,15 +1,11 @@
+import pickle
 from flask import Flask, render_template, request
 from flask.json import jsonify
 
 app = Flask(__name__)
 
-projects = [{
-    'name': 'my project',
-    'tasks': [{
-        'name': 'my task',
-        'completed': False
-    }]
-}]
+with open("projects.pickle", "rb") as fajl:
+    projects = pickle.load(fajl)
 
 
 @app.route('/')
@@ -23,11 +19,11 @@ def get_projects():
     return jsonify({'projects': projects})
 
 
-@app.route('/project/<string:name>')
-def get_project(name):
-    for project in projects:
-        if project['name'] == name:
-            return jsonify(project)
+@app.route('/project/<string:id>')
+def get_project(id):
+    for project in projects["projects"]:
+        if project["project_id"] == id:
+            return project
     return jsonify({'message': 'project not found'})
 
 
