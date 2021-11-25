@@ -15,14 +15,35 @@ def save_data(data):
         pickle.dump(projects, fajl)
 
 
+def filter_list_of_dicts(list_of_dicts, fields):  # szűrő függvény
+    filtered_dicts = []
+
+    for dict in list_of_dicts:
+        copy_dict = dict.copy()
+        for key in dict:
+            if key not in fields:
+                copy_dict.pop(key, None)
+        filtered_dicts.append(copy_dict)
+    return filtered_dicts
+
+
+# fields = ["name", "id"]  kulcsok, amiket látni akarunk
+
+
 @app.route('/')
 def home():
     name = "Zsolt"
     return render_template('index.html', user_name=name)
 
 
-@app.route('/project')
+@app.route('/project', methods=["GET", "POST"])
 def get_projects():
+    request_data = request.get_json()  # kinyeri a 'GET' a body-ból az adatot
+    if request_data and len(request_data["fields"]) > 0:
+        return jsonify({
+            "projects":
+            filter_list_of_dicts(projects["projects"], request_data["fields"])
+        })
     return jsonify({'projects': projects})
 
 
@@ -48,10 +69,17 @@ def update_project(id):
     return jsonify({'message': 'project not found'})
 
 
-@app.route('/project/<string:name>/task')
-def get_all_tasks_in_project(name):
-    for project in projects:
-        if project['name'] == name:
+@app.route('/project/<string:id>/task', methods=["GET", "POST"])
+def get_all_tasks_in_project(id):
+    request_data = request.get_json()
+    for project in projects["projects"]:
+        if project['project_id'] == id:
+            if request_data and len(request_data["fields"]) > 0:
+                return jsonify({
+                    "tasks":
+                    filter_list_of_dicts(project["tasks"],
+                                         request_data["fields"])
+                })
             return jsonify({'tasks': project['tasks']})
     return jsonify({'message': 'project not found'})
 
